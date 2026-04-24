@@ -35,9 +35,7 @@ No complex vocabulary. No fancy phrases. Just brutal, funny, plain English."""
     bio = st.text_area(
 "Paste your LinkedIn bio here",
 height=200,
-placeholder="Passionate results-driven thought leader who leverages
-synergies..."
-)
+placeholder =" Passionate results-driven thought leader who leverages synergies...")
 if st.button("Roast Me", type="primary", use_container_width=True):
 if not bio.strip():
 st.warning("Paste a bio first.")
