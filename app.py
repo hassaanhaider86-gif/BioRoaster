@@ -1,65 +1,60 @@
-from flask import Flask, request, jsonify, render_template_string
-import random
-
-app = Flask(__name__)
-
-ROAST_TEMPLATES = [
-    "Wow, '%s' — sounds like you invented being average.",
-    "'%s'... LinkedIn called, they want their buzzwords back.",
-    "Ah yes, '%s' — the universal sign of someone who loves saying a lot without saying anything.",
-    "'%s' — impressive, if this were 2012.",
-    "Reading '%s' feels like eating plain toast with no butter.",
-    "'%s' — did ChatGPT write this or did you?",
-    "'%s' — bold of you to assume this stands out.",
+import streamlit as st
+from groq import Groq
+st.set_page_config(
+page_title="LinkedIn Bio Roaster",
+page_icon="🔥",
+layout="centered"
+)
+st.title("🔥 LinkedIn Bio Roaster")
+st.caption("Powered by LLaMA 3 via Groq")
+st.divider()
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+intensity = st.select_slider(
+"Roast Intensity",
+options=["Mild", "Medium", "Savage", "Brutal"],
+value="Savage"
+)
+PROMPTS = {
+"Mild": """You are a kind but honest LinkedIn bio reviewer.
+Point out cliches and buzzwords with light humour.
+Be encouraging. End with 2 specific genuine compliments.
+Use simple, conversational language. Keep it short and easy to read.""",
+"Medium": """You are a witty LinkedIn bio roaster.
+Call out buzzwords and humble-brags with sharp humour.
+Be funny but not cruel. End with one genuine compliment.
+Write like a funny friend, not a professor. Keep sentences short.""",
+"Savage": """You are a savage LinkedIn bio roaster.
+Destroy the buzzwords and cliches. Be hilarious and cutting.
+End with one tiny genuine compliment.
+Write in short punchy sentences. Simple words only. No complex vocabulary.""",
+"Brutal": """You are the most ruthless LinkedIn bio critic alive.
+Tear this bio apart. Call out every buzzword and every humble-brag.
+Be savage and funny. End with one honest sentence of feedback.
+IMPORTANT: Write like you are texting a friend. Short sentences. Simple words.
+No complex vocabulary. No fancy phrases. Just brutal, funny, plain English."""
+    bio = st.text_area(
+"Paste your LinkedIn bio here",
+height=200,
+placeholder="Passionate results-driven thought leader who leverages
+synergies..."
+)
+if st.button("Roast Me", type="primary", use_container_width=True):
+if not bio.strip():
+st.warning("Paste a bio first.")
+else:
+with st.spinner("Roasting..."):
+response = client.chat.completions.create(
+model="llama-3.3-70b-versatile",
+messages=[
+{"role": "system", "content": PROMPTS[intensity]},
+{"role": "user", "content": f"Roast this LinkedIn
+bio:\n\n{bio}"}
 ]
-
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bio Roaster 🔥</title>
-    <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
-        textarea { width: 100%; height: 100px; }
-        button { padding: 10px 20px; margin-top: 10px; }
-        .result { margin-top: 20px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h1>🔥 LinkedIn Bio Roaster</h1>
-    <form method="post">
-        <textarea name="bio" placeholder="Paste your bio here..."></textarea><br>
-        <button type="submit">Roast Me</button>
-    </form>
-    {% if roast %}
-        <div class="result">{{ roast }}</div>
-    {% endif %}
-</body>
-</html>
-"""
-
-def generate_roast(bio):
-    template = random.choice(ROAST_TEMPLATES)
-    return template % bio
-
-@app.route("/", methods=["GET", "POST"])
-def home():
-    roast = None
-    if request.method == "POST":
-        bio = request.form.get("bio", "")
-        if bio:
-            roast = generate_roast(bio)
-    return render_template_string(HTML_TEMPLATE, roast=roast)
-
-@app.route("/api/roast", methods=["POST"])
-def api_roast():
-    data = request.json
-    bio = data.get("bio", "")
-    if not bio:
-        return jsonify({"error": "No bio provided"}), 400
-
-    roast = generate_roast(bio)
-    return jsonify({"roast": roast})
-
-if __name__ == "__main__":
-    app.run(debug=True)
+)
+roast = response.choices[0].message.content
+st.divider()
+st.subheader(f"{intensity} Roast")
+st.write(roast)
+st.divider()
+st.divider()
+st.caption("Built at DataYard | Powered by Groq + LLaMA 3")
