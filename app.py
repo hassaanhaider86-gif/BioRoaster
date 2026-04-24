@@ -31,7 +31,7 @@ Write in short punchy sentences. Simple words only. No complex vocabulary.""",
 Tear this bio apart. Call out every buzzword and every humble-brag.
 Be savage and funny. End with one honest sentence of feedback.
 IMPORTANT: Write like you are texting a friend. Short sentences. Simple words.
-No complex vocabulary. No fancy phrases. Just brutal, funny, plain English."""
+No complex vocabulary. No fancy phrases. Just brutal, funny, plain English."""}
     bio = st.text_area(
 "Paste your LinkedIn bio here",
 height=200,
